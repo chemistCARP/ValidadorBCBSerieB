@@ -3,205 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Validador BCB Pro v1.0</title>
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    <title>Validador Serie B v1.15</title>
     <style>
-        body { 
-            font-family: 'Segoe UI', Roboto, sans-serif; 
-            background: #1a1a1a; color: #e0e0e0; 
-            margin: 0; padding: 15px; 
-            display: flex; flex-direction: column; align-items: center;
-        }
-        .card { 
-            background: #2d2d2d; width: 100%; max-width: 450px; 
-            border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); 
-            padding: 20px; box-sizing: border-box; border: 1px solid #444;
-        }
-        .header { text-align: center; border-bottom: 1px solid #444; margin-bottom: 15px; padding-bottom: 10px; }
-        #cam-container { 
-            width: 100%; height: 240px; background: #000; 
-            border-radius: 20px; position: relative; overflow: hidden; 
-            margin-bottom: 15px; border: 2px solid #555; 
-        }
+        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #eee; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
+        .card { background: #1e1e1e; width: 100%; max-width: 400px; border-radius: 20px; padding: 15px; box-sizing: border-box; border: 1px solid #333; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .header { text-align: center; margin-bottom: 12px; border-bottom: 1px dashed #444; padding-bottom: 10px; }
+        h2 { margin: 0; color: #fff; font-size: 1.2rem; }
+        
+        #cam-container { width: 100%; height: 320px; background: #000; border-radius: 15px; position: relative; overflow: hidden; margin-bottom: 10px; border: 2px solid #444; }
         video { width: 100%; height: 100%; object-fit: cover; }
-        .scan-bar { 
-            position: absolute; width: 100%; height: 3px; background: #00ff00; 
-            top: 0; animation: scanning 2.5s linear infinite; box-shadow: 0 0 15px #00ff00; 
-        }
-        @keyframes scanning { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
-        
-        .section-label { font-size: 11px; font-weight: bold; color: #888; margin: 10px 0 5px 5px; text-transform: uppercase; }
-        .manual-box { background: #383838; padding: 15px; border-radius: 18px; border: 1px solid #444; }
-        
-        select, input { 
-            width: 100%; padding: 14px; margin: 8px 0; border-radius: 10px; border: 1px solid #555; 
-            background: #2d2d2d; color: #fff; font-size: 17px; box-sizing: border-box; outline: none;
-        }
-        .serie-row { display: flex; align-items: center; gap: 10px; }
-        .b-mark { font-size: 28px; font-weight: bold; color: #ff4444; padding-right: 5px; }
 
-        button { width: 100%; padding: 16px; border: none; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 10px; }
+        .guide-serie-letra { position: absolute; top: 12%; right: 5%; width: 55%; height: 12%; border: 2px dashed #00ff00; border-radius: 5px; pointer-events: none; }
+        .guide-valor { position: absolute; bottom: 12%; right: 10%; width: 40%; height: 20%; border: 2px dashed #00d4ff; border-radius: 8px; pointer-events: none; }
+        .label-v { position: absolute; width: 100%; text-align: center; font-size: 8px; color: #fff; background: rgba(0,0,0,0.6); font-weight: bold; }
+        
+        #status { font-size: 13px; text-align: center; margin: 8px 0; color: #aaa; min-height: 3em; }
+        .manual-box { background: #252525; padding: 12px; border-radius: 15px; border: 1px solid #333; }
+        select, input { width: 100%; padding: 12px; margin: 4px 0; border-radius: 10px; border: 1px solid #444; background: #1a1a1a; color: #fff; font-size: 18px; text-align: center; outline: none; }
+        
+        /* Resaltado para cuando el OCR duda */
+        .duda-input { border: 2px solid #ffeb3b !important; animation: blink 1s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        .serie-row { display: flex; align-items: center; gap: 8px; }
+        #letra-res { width: 60px; font-weight: bold; color: #ffeb3b; font-size: 24px; background: #111; border: 2px solid #555; }
+
+        button { width: 100%; padding: 16px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; text-transform: uppercase; }
         .btn-ocr { background: #28a745; color: white; border-bottom: 4px solid #1e7e34; }
-        .btn-check { background: #007bff; color: white; border-bottom: 4px solid #0056b3; }
         
-        #status { font-size: 13px; color: #aaa; text-align: center; margin: 10px 0; min-height: 1.2em; }
-        .res { margin-top: 15px; padding: 18px; border-radius: 15px; display: none; line-height: 1.5; font-size: 16px; text-align: center; }
-        .ok { background: #1b4332; color: #d8f3dc; border: 1px solid #2d6a4f; }
-        .bad { background: #5a1217; color: #ffccd5; border: 1px solid #800f2f; }
+        .res { margin-top: 12px; padding: 15px; border-radius: 12px; display: none; text-align: center; font-weight: bold; font-size: 15px; border: 1px solid transparent; line-height: 1.4; }
+        .ok { background: #1b4332; color: #d8f3dc; border-color: #2d6a4f; }
+        .bad { background: #5a1217; color: #ffccd5; border-color: #800f2f; }
 
-        /* Estilos de Créditos */
-        .footer-credits {
-            margin-top: 25px;
-            padding-top: 15px;
-            border-top: 1px dashed #555;
-            text-align: center;
-            font-size: 12px;
-            color: #888;
-            line-height: 1.6;
-        }
-        .footer-credits b { color: #bbb; }
-        .x-account { color: #1DA1F2; font-weight: bold; text-decoration: none; }
+        .links-container { margin-top: 15px; font-size: 12px; text-align: center; line-height: 1.6; }
+        .links-container a { color: #00d4ff; text-decoration: none; font-weight: bold; display: block; margin: 4px 0; }
+        .footer { margin-top: 20px; padding-top: 10px; border-top: 1px solid #333; text-align: center; font-size: 10px; color: #777; }
+        .footer a { color: #00d4ff; text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <div class="header">
-        <h2 style="margin:0; color:#fff;">Validador BCB</h2>
-        <small style="color: #888;">Serie B - Comunicado CP9/2026</small>
+        <h2>Validador Serie B</h2>
+        <span style="font-size: 10px; color: #888;">v1.15</span>
     </div>
 
-    <div class="section-label">Detección por Cámara</div>
     <div id="cam-container">
         <video id="video" autoplay playsinline muted></video>
-        <div class="scan-bar"></div>
+        <div class="guide-serie-letra"><span class="label-v" style="top:-14px;">SERIE Y LETRA</span></div>
+        <div class="guide-valor"><span class="label-v" style="bottom:-14px;">VALOR (10, 20, 50)</span></div>
     </div>
-    <button class="btn-ocr" onclick="escanear()">📷 (lado derecho) ANALIZAR BILLETE</button>
-    <div id="status">Iniciando cámara...</div>
+    
+    <button class="btn-ocr" id="btnMain" onclick="activarMotor()">📷 ESCANEAR AHORA</button>
+    <div id="status">Instalación rápida. El motor inicia al primer uso.</div>
 
-    <div class="section-label">Ingreso Manual (B)</div>
     <div class="manual-box">
         <select id="sel-corte">
+            <option value="">-- Valor --</option>
             <option value="10">Bs. 10</option>
-            <option value="20" selected>Bs. 20</option>
+            <option value="20">Bs. 20</option>
             <option value="50">Bs. 50</option>
         </select>
         <div class="serie-row">
-            <input type="number" id="inp-num" placeholder="Escriba los números">
-            <span class="b-mark">B</span>
+            <input type="number" id="inp-num" placeholder="Número Serie">
+            <input type="text" id="letra-res" placeholder="?" maxlength="1" oninput="validarLetra(this)">
         </div>
-        <button class="btn-check" onclick="validarManual()">VERIFICAR SERIE B</button>
+        <button style="background:#007bff; color:white; border-bottom: 4px solid #0056b3;" onclick="validarFinal()">VERIFICAR RESULTADO</button>
     </div>
 
     <div id="res-box" class="res"></div>
 
-    <div class="footer-credits">
-        Desarrollado por: <span class="x-account">@ChemistCRP</span> (X)<br>
-        Asistente de Desarrollo: <b>Gemini IA</b><br>
-        Versión: <b>1.0</b> | 01 de Marzo, 2026
+    <div class="links-container">
+        <a href="https://www.bcb.gob.bo/?q=content/serie-b" target="_blank">🔎 Medidas de Seguridad</a>
+        <a href="https://www.bcb.gob.bo/?q=content/verificador-de-número-de-serie" target="_blank">🔎 Verificador BCB</a>
     </div>
+    <div class="footer">
+        <a href="https://x.com/ChemistCRP" target="_blank">👤 Autor: @ChemistCRP</a>
+        Asistencia Técnica: <b>Gemini IA</b> | 2026
+ 
 
     <canvas id="canv" style="display:none;"></canvas>
 </div>
 
 <script>
-    const RANGOS_B = {
-        "10": [[77100001, 77550000], [78000001, 78450000], [78900001, 96350000], [96350001, 96800000], [96800001, 97250000], [98150001, 98600000], [104900001, 105350000], [105350001, 105800000], [106700001, 107150000], [107600001, 108050000], [108050001, 108500000], [109400001, 109850000]],
-        "20": [[87280145, 91646549], [96650001, 97100000], [99800001, 100250000], [100250001, 100700000], [109250001, 109700000], [110600001, 111050000], [111050001, 111500000], [111950001, 112400000], [112400001, 112850000], [112850001, 113300000], [114200001, 114650000], [114650001, 115100000], [115100001, 115550000], [118700001, 119150000], [119150001, 119600000], [120500001, 120950000]],
-        "50": [[67250001, 67700000], [69050001, 69500000], [69500001, 69950000], [69950001, 70400000], [70400001, 70850000], [70850001, 71300000], [7631012, 85139995], [86400001, 86850000], [90900001, 91350000], [91800001, 92250000]]
-    };
+    const RANGOS_B = { "10": [[77100001, 77550000], [78000001, 78450000], [78900001, 96350000], [96350001, 96800000], [96800001, 97250000], [98150001, 98600000], [104900001, 105350000], [105350001, 105800000], [106700001, 107150000], [107600001, 108050000], [108050001, 108500000], [109400001, 109850000]], "20": [[87280145, 91646549], [96650001, 97100000], [99800001, 100250000], [100250001, 100700000], [109250001, 109700000], [110600001, 111050000], [111050001, 111500000], [111950001, 112400000], [112400001, 112850000], [112850001, 113300000], [114200001, 114650000], [114650001, 115100000], [115100001, 115550000], [118700001, 119150000], [119150001, 119600000], [120500001, 120950000]], "50": [[67250001, 67700000], [69050001, 69500000], [69500001, 69950000], [69500001, 70400000], [70400001, 70850000], [70850001, 71300000], [7631012, 85139995], [86400001, 86850000], [90900001, 91350000], [91800001, 92250000]] };
 
     const video = document.getElementById('video');
     const resBox = document.getElementById('res-box');
     const status = document.getElementById('status');
+    const letraInput = document.getElementById('letra-res');
+    const selCorte = document.getElementById('sel-corte');
 
-    async function startCamera() {
+    window.onload = async () => {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: "environment" }, 
-                audio: false 
-            });
-            video.srcObject = stream;
-            status.innerText = "Cámara lista para escanear";
-        } catch (err) {
-            status.innerText = "Error: Acceso a cámara denegado.";
-        }
+            const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+            video.srcObject = s;
+        } catch (e) { status.innerText = "Error cámara."; }
+    };
+
+    function validarLetra(el) {
+        el.value = el.value.toUpperCase();
+        if (!/^[AB]$/.test(el.value)) { el.value = ""; }
+        el.classList.remove('duda-input');
     }
 
-    async function escanear() {
-        status.innerText = "⚡ Analizando...";
-        resBox.style.display = "none";
+    function activarMotor() {
+        if (window.Tesseract) { ejecutarOCR(); return; }
+        status.innerText = "⏳ Descargando motor de lectura...";
+        const scr = document.createElement('script');
+        scr.src = "https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js";
+        scr.onload = () => { 
+            status.innerText = "✅ Motor listo. Presiona ESCANEAR de nuevo."; 
+            status.style.color = "#00ff00";
+        };
+        document.head.appendChild(scr);
+    }
+
+    async function ejecutarOCR() {
+        status.innerText = "⚡ ANALIZANDO...";
+        status.style.color = "#ffc107";
+        letraInput.classList.remove('duda-input');
         
         const canv = document.getElementById('canv');
-        canv.width = video.videoWidth; 
-        canv.height = video.videoHeight;
+        canv.width = video.videoWidth; canv.height = video.videoHeight;
         canv.getContext('2d').drawImage(video, 0, 0);
 
         try {
             const { data: { text } } = await Tesseract.recognize(canv, 'eng');
+            const clean = text.toUpperCase();
             
-            // --- NUEVO FILTRO DE SEGURIDAD ---
-            // Buscamos si hay un número de al menos 7 dígitos
-            const numDetectado = text.replace(/\D/g, " ").split(" ").find(x => x.length >= 7);
-            
-            // Si no hay números largos, probablemente no es un billete
-            if (!numDetectado && !/\b(100|200)\b/.test(text)) {
-                status.innerText = "⚠️ No se detectó un billete claro.";
-                return; 
-            }
-            // ---------------------------------
+            // DETECCIÓN DE VALOR: Solo cambia si hay certeza absoluta
+            if (/\b10\b/.test(clean)) selCorte.value = "10";
+            else if (/\b20\b/.test(clean)) selCorte.value = "20";
+            else if (/\b50\b/.test(clean)) selCorte.value = "50";
+            else selCorte.value = ""; // No se leyó valor, se queda en manual
 
-            // 1. Si es 100 o 200, es válido directo
-            if (/\b(100|200)\b/.test(text)) {
-                showMessage("ok", "✅ BILLETE VÁLIDO<br>Los cortes de 100 y 200 no tienen restricciones.");
-                return;
-            }
-
-            // 2. Si detecta serie distinta a B
-            if (/\b[A,C-Z]\b/.test(text)) {
-                showMessage("ok", "✅ BILLETE VÁLIDO<br>Se detectó una serie distinta a la 'B'.");
-                return;
+            // DETECCIÓN DE LETRA
+            if (/[\s\d]A[\s\W]/.test(clean)) {
+                letraInput.value = "A";
+            } else if (/[\s\d][B8][\s\W]/.test(clean)) {
+                letraInput.value = "B";
+            } else {
+                letraInput.value = "?"; 
+                letraInput.classList.add('duda-input');
             }
 
-            // 3. Extraer número y corte para 10, 20, 50
-            const val = text.match(/\b(10|20|50)\b/)?.[0] || "20";
+            const num = clean.replace(/\D/g, " ").split(" ").find(x => x.length >= 7);
+            if (num) document.getElementById('inp-num').value = num;
 
-            document.getElementById('sel-corte').value = val;
-            document.getElementById('inp-num').value = numDetectado;
-            
-            validarManual();
-        } catch (e) {
-            status.innerText = "Error de lectura. Intente de nuevo.";
-        }
+            status.innerText = "✅ Escaneo terminado. Verifique y complete. De ser necesaria la entrada manual oprima VERIFICAR RESULTADO.";
+            status.style.color = "#00d4ff";
+        } catch (e) { status.innerText = "Error. Intente de nuevo."; }
     }
 
-    function validarManual() {
-        const corte = document.getElementById('sel-corte').value;
-        const num = parseInt(document.getElementById('inp-num').value);
-        
-        if (isNaN(num)) {
-            showMessage("bad", "Ingrese el número de serie.");
-            return;
-        }
+    function validarFinal() {
+        const c = selCorte.value;
+        const n_raw = document.getElementById('inp-num').value;
+        const n = parseInt(n_raw);
+        const l = letraInput.value;
 
-        const esMalo = RANGOS_B[corte]?.some(r => num >= r[0] && num <= r[1]);
+        if (!c || isNaN(n) || l === "?" || !l) { 
+            showMsg("bad", "⚠️ Por favor, ingrese el Valor, Serie y Letra (A o B) manualmente."); 
+            return; 
+        }
+        
+        const esMalo = (l === "B") && RANGOS_B[c]?.some(r => n >= r[0] && n <= r[1]);
+        const detalles = `Bs. ${c} | Serie: ${n_raw} | Letra: ${l}`;
 
         if (esMalo) {
-            showMessage("bad", `⚠️ SIN VALOR LEGAL<br>Serie B - ${num} (Bs.${corte}) está invalidado.`);
-            if (window.navigator.vibrate) window.navigator.vibrate(500);
+            showMsg("bad", `⚠️ SIN VALOR LEGAL<br><span style="font-size:13px; font-weight:normal;">${detalles}</span><br>Invalidado por el BCB.`);
         } else {
-            showMessage("ok", `✅ BILLETE VÁLIDO<br>Serie B - ${num} (Bs.${corte}) es apto.`);
+            showMsg("ok", `✅ BILLETE VÁLIDO<br><span style="font-size:13px; font-weight:normal;">${detalles}</span><br>Apto para circulación.`);
         }
     }
 
-    function showMessage(type, msg) {
-        resBox.className = "res " + type;
-        resBox.innerHTML = msg;
+    function showMsg(t, m) {
+        resBox.className = "res " + t;
+        resBox.innerHTML = m;
         resBox.style.display = "block";
-        status.innerText = "Análisis completado.";
     }
-
-    window.onload = startCamera;
 </script>
 </body>
 </html>
