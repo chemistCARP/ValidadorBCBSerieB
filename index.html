@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Validador BCB Pro v1.0</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            background: #1a1a1a; color: #e0e0e0; 
+            margin: 0; padding: 15px; 
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .card { 
+            background: #2d2d2d; width: 100%; max-width: 450px; 
+            border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); 
+            padding: 20px; box-sizing: border-box; border: 1px solid #444;
+        }
+        .header { text-align: center; border-bottom: 1px solid #444; margin-bottom: 15px; padding-bottom: 10px; }
+        #cam-container { 
+            width: 100%; height: 240px; background: #000; 
+            border-radius: 20px; position: relative; overflow: hidden; 
+            margin-bottom: 15px; border: 2px solid #555; 
+        }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        .scan-bar { 
+            position: absolute; width: 100%; height: 3px; background: #00ff00; 
+            top: 0; animation: scanning 2.5s linear infinite; box-shadow: 0 0 15px #00ff00; 
+        }
+        @keyframes scanning { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
+        
+        .section-label { font-size: 11px; font-weight: bold; color: #888; margin: 10px 0 5px 5px; text-transform: uppercase; }
+        .manual-box { background: #383838; padding: 15px; border-radius: 18px; border: 1px solid #444; }
+        
+        select, input { 
+            width: 100%; padding: 14px; margin: 8px 0; border-radius: 10px; border: 1px solid #555; 
+            background: #2d2d2d; color: #fff; font-size: 17px; box-sizing: border-box; outline: none;
+        }
+        .serie-row { display: flex; align-items: center; gap: 10px; }
+        .b-mark { font-size: 28px; font-weight: bold; color: #ff4444; padding-right: 5px; }
+
+        button { width: 100%; padding: 16px; border: none; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 10px; }
+        .btn-ocr { background: #28a745; color: white; border-bottom: 4px solid #1e7e34; }
+        .btn-check { background: #007bff; color: white; border-bottom: 4px solid #0056b3; }
+        
+        #status { font-size: 13px; color: #aaa; text-align: center; margin: 10px 0; min-height: 1.2em; }
+        .res { margin-top: 15px; padding: 18px; border-radius: 15px; display: none; line-height: 1.5; font-size: 16px; text-align: center; }
+        .ok { background: #1b4332; color: #d8f3dc; border: 1px solid #2d6a4f; }
+        .bad { background: #5a1217; color: #ffccd5; border: 1px solid #800f2f; }
+
+        /* Estilos de Créditos */
+        .footer-credits {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px dashed #555;
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+            line-height: 1.6;
+        }
+        .footer-credits b { color: #bbb; }
+        .x-account { color: #1DA1F2; font-weight: bold; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="header">
+        <h2 style="margin:0; color:#fff;">Validador BCB</h2>
+        <small style="color: #888;">Serie B - Comunicado CP9/2026</small>
+    </div>
+
+    <div class="section-label">Detección por Cámara</div>
+    <div id="cam-container">
+        <video id="video" autoplay playsinline muted></video>
+        <div class="scan-bar"></div>
+    </div>
+    <button class="btn-ocr" onclick="escanear()">📷 (lado derecho) ANALIZAR BILLETE</button>
+    <div id="status">Iniciando cámara...</div>
+
+    <div class="section-label">Ingreso Manual (B)</div>
+    <div class="manual-box">
+        <select id="sel-corte">
+            <option value="10">Bs. 10</option>
+            <option value="20" selected>Bs. 20</option>
+            <option value="50">Bs. 50</option>
+        </select>
+        <div class="serie-row">
+            <input type="number" id="inp-num" placeholder="Escriba los números">
+            <span class="b-mark">B</span>
+        </div>
+        <button class="btn-check" onclick="validarManual()">VERIFICAR SERIE B</button>
+    </div>
+
+    <div id="res-box" class="res"></div>
+
+    <div class="footer-credits">
+        Desarrollado por: <span class="x-account">@ChemistCRP</span> (X)<br>
+        Asistente de Desarrollo: <b>Gemini IA</b><br>
+        Versión: <b>1.0</b> | 01 de Marzo, 2026
+    </div>
+
+    <canvas id="canv" style="display:none;"></canvas>
+</div>
+
+<script>
+    const RANGOS_B = {
+        "10": [[77100001, 77550000], [78000001, 78450000], [78900001, 96350000], [96350001, 96800000], [96800001, 97250000], [98150001, 98600000], [104900001, 105350000], [105350001, 105800000], [106700001, 107150000], [107600001, 108050000], [108050001, 108500000], [109400001, 109850000]],
+        "20": [[87280145, 91646549], [96650001, 97100000], [99800001, 100250000], [100250001, 100700000], [109250001, 109700000], [110600001, 111050000], [111050001, 111500000], [111950001, 112400000], [112400001, 112850000], [112850001, 113300000], [114200001, 114650000], [114650001, 115100000], [115100001, 115550000], [118700001, 119150000], [119150001, 119600000], [120500001, 120950000]],
+        "50": [[67250001, 67700000], [69050001, 69500000], [69500001, 69950000], [69950001, 70400000], [70400001, 70850000], [70850001, 71300000], [7631012, 85139995], [86400001, 86850000], [90900001, 91350000], [91800001, 92250000]]
+    };
+
+    const video = document.getElementById('video');
+    const resBox = document.getElementById('res-box');
+    const status = document.getElementById('status');
+
+    async function startCamera() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: "environment" }, 
+                audio: false 
+            });
+            video.srcObject = stream;
+            status.innerText = "Cámara lista para escanear";
+        } catch (err) {
+            status.innerText = "Error: Acceso a cámara denegado.";
+        }
+    }
+
+    async function escanear() {
+        status.innerText = "⚡ Analizando...";
+        resBox.style.display = "none";
+        
+        const canv = document.getElementById('canv');
+        canv.width = video.videoWidth; 
+        canv.height = video.videoHeight;
+        canv.getContext('2d').drawImage(video, 0, 0);
+
+        try {
+            const { data: { text } } = await Tesseract.recognize(canv, 'eng');
+            
+            // --- NUEVO FILTRO DE SEGURIDAD ---
+            // Buscamos si hay un número de al menos 7 dígitos
+            const numDetectado = text.replace(/\D/g, " ").split(" ").find(x => x.length >= 7);
+            
+            // Si no hay números largos, probablemente no es un billete
+            if (!numDetectado && !/\b(100|200)\b/.test(text)) {
+                status.innerText = "⚠️ No se detectó un billete claro.";
+                return; 
+            }
+            // ---------------------------------
+
+            // 1. Si es 100 o 200, es válido directo
+            if (/\b(100|200)\b/.test(text)) {
+                showMessage("ok", "✅ BILLETE VÁLIDO<br>Los cortes de 100 y 200 no tienen restricciones.");
+                return;
+            }
+
+            // 2. Si detecta serie distinta a B
+            if (/\b[A,C-Z]\b/.test(text)) {
+                showMessage("ok", "✅ BILLETE VÁLIDO<br>Se detectó una serie distinta a la 'B'.");
+                return;
+            }
+
+            // 3. Extraer número y corte para 10, 20, 50
+            const val = text.match(/\b(10|20|50)\b/)?.[0] || "20";
+
+            document.getElementById('sel-corte').value = val;
+            document.getElementById('inp-num').value = numDetectado;
+            
+            validarManual();
+        } catch (e) {
+            status.innerText = "Error de lectura. Intente de nuevo.";
+        }
+    }
+
+    function validarManual() {
+        const corte = document.getElementById('sel-corte').value;
+        const num = parseInt(document.getElementById('inp-num').value);
+        
+        if (isNaN(num)) {
+            showMessage("bad", "Ingrese el número de serie.");
+            return;
+        }
+
+        const esMalo = RANGOS_B[corte]?.some(r => num >= r[0] && num <= r[1]);
+
+        if (esMalo) {
+            showMessage("bad", `⚠️ SIN VALOR LEGAL<br>Serie B - ${num} (Bs.${corte}) está invalidado.`);
+            if (window.navigator.vibrate) window.navigator.vibrate(500);
+        } else {
+            showMessage("ok", `✅ BILLETE VÁLIDO<br>Serie B - ${num} (Bs.${corte}) es apto.`);
+        }
+    }
+
+    function showMessage(type, msg) {
+        resBox.className = "res " + type;
+        resBox.innerHTML = msg;
+        resBox.style.display = "block";
+        status.innerText = "Análisis completado.";
+    }
+
+    window.onload = startCamera;
+</script>
+</body>
+</html>
