@@ -1,61 +1,58 @@
-# ValidadorBCBSerieB
-Validador de billetes 10, 20, 50 Bs de la serie B de Bolivia
+# Validador BCB Serie B (PFB) #
+Validador de billetes 10, 20 y 50 Bs de la Serie B de Bolivia.
 
-**Versión 1.0**
+Versión 1.16 (Actualizada al 02/03/2026)
 
-Este es un proyecto de **código abierto** diseñado para ayudar a los ciudadanos bolivianos a verificar rápidamente si sus billetes de la **Serie B** (cortes de Bs10, Bs20 y Bs50) se encuentran dentro de los rangos reportados como invalidados por el Banco Central de Bolivia según el comunicado **CP9/2026**.
+Este es un proyecto de código abierto diseñado con la única intención de facilitar la identificación rápida de billetes de la Serie B (Primera Familia de Billetes - PFB) en los cortes de Bs10, Bs20 y Bs50. La aplicación permite verificar si los números de serie se encuentran dentro de los bloques consolidados reportados como invalidados (sin valor legal) por el Banco Central de Bolivia, según el comunicado oficial CP10/2026.
 
-## 📱 Características
+📱 Características
+Detección por IA: Utiliza reconocimiento óptico de caracteres (OCR) para leer la serie, la letra y el corte del billete mediante la cámara en tiempo real.
 
-* **Detección por IA:** Utiliza reconocimiento óptico de caracteres (OCR) para leer la serie y el corte del billete mediante la cámara.
-* **Privacidad Total:** La aplicación procesa la imagen localmente en tu celular; no sube fotos a internet ni almacena datos personales.
-* **Modo Manual:** Permite la verificación manual ingresando los números de serie en caso de billetes desgastados.
+Bloques Consolidados: Base de datos actualizada con los rangos técnicos definitivos del BCB a marzo de 2026.
 
----
+Privacidad Total: La aplicación procesa la imagen localmente en tu dispositivo; no sube fotos a internet ni almacena datos personales.
 
-## ⚠️ Descargo de Responsabilidad
+Modo Manual: Permite la corrección o entrada manual de datos en caso de billetes muy desgastados o baja iluminación.
 
-* **No es una App Oficial:** Esta aplicación **NO** es distribuida, avalada ni pertenece al Banco Central de Bolivia (BCB). Es una herramienta independiente de servicio civil.
-* **Responsabilidad del Usuario:** La aplicación es un asistente de lectura. La responsabilidad final de comparar y verificar los números de serie recae exclusivamente en el usuario.
-* **Interpretación de Datos:** El software interpreta los números mediante una fotografía; asegúrese de tener buena iluminación para evitar errores de lectura.
+⚠️ Descargo de Responsabilidad
+Propósito Informativo: Esta herramienta tiene la intención de servir como un asistente de identificación rápida para el ciudadano. No sustituye la verificación física detallada.
 
----
+No es una App Oficial: Esta aplicación NO es distribuida, avalada ni pertenece al Banco Central de Bolivia (BCB). Es una herramienta independiente de servicio civil.
 
-## 📥 Instalación y Seguridad
+Responsabilidad del Usuario: La responsabilidad final de comparar y verificar la validez de los números de serie recae exclusivamente en el usuario. Se recomienda contrastar cualquier resultado sospechoso directamente en el Verificador Oficial del BCB.
 
-Debido a su naturaleza de **distribución libre**, esta aplicación no se encuentra en Google Play Store.
+Interpretación de Datos: El software interpreta caracteres mediante fotografía; asegúrese de tener buena iluminación y enfoque para evitar errores de lectura.
 
-### ¿Es seguro instalarla?
+📥 Instalación y Seguridad
+Debido a su naturaleza de distribución libre, esta aplicación se distribuye como archivo .apk independiente.
 
-* **Sin Virus:** El código es 100% abierto y transparente. Al instalarla, tu sistema Android (Play Protect) escaneará el archivo para confirmar que es seguro.
-* **Código Abierto:** Cualquier desarrollador puede auditar el código fuente en este repositorio para verificar su funcionamiento.
+¿Es seguro instalarla?
+Sin Malware: El código es 100% abierto y transparente. Al instalarla, el sistema Android Play Protect escaneará el archivo para confirmar su integridad.
 
-**Para instalar:**
+Código Auditable: Cualquier desarrollador puede auditar el código fuente en este repositorio para verificar que no existen funciones ocultas.
 
-1. Descarga el archivo `Validador BCB Serie B.apk` desde la sección de [Releases].
-2. Abre el archivo en tu celular Android.
-3. Si el sistema lo solicita, activa la opción "Permitir instalación desde fuentes desconocidas".
+Pasos para instalar:
 
----
+Descarga el archivo Validador_BCB_SerieB_v1.16.apk desde la sección de [Releases].
 
-## 🛠️ Tecnologías utilizadas
+Abre el archivo en tu dispositivo Android.
 
-* **HTML5 / CSS3 / JavaScript** (Lógica de validación).
-* **Tesseract.js** (Motor de reconocimiento de texto).
-* **Capacitor** (Para el empaquetado como App Nativa Android).
-* **Gemini IA** (Asistente de desarrollo).
+Si el sistema lo solicita, activa la opción "Permitir instalación desde fuentes desconocidas" para tu navegador o gestor de archivos.
 
----
+🛠️ Tecnologías utilizadas
+HTML5 / CSS3 / JavaScript (Lógica de validación y UI).
 
-## 👨‍💻 Créditos
+Tesseract.js (Motor de reconocimiento de texto de alto rendimiento).
 
-* **Desarrollador:** [@ChemistCRP](https://www.google.com/search?q=https://x.com/ChemistCRP) en X (anteriormente Twitter).
-* **Colaboración:** Desarrollado con el apoyo de **Gemini IA**.
+Capacitor (Framework para el empaquetado como aplicación nativa Android).
 
----
+Gemini IA (Asistente de desarrollo y optimización de algoritmos).
 
-### ¿Cómo contribuir?
+👨‍💻 Créditos y Datos
+Desarrollador: @ChemistCRP en X (Twitter).
 
-Si encuentras un error o quieres mejorar la interfaz, ¡siéntete libre de abrir un *Pull Request* o reportar un *Issue*!
+Fuente de Datos: Comunicados técnicos del Banco Central de Bolivia.
+
+Colaboración: Desarrollado con el apoyo de Gemini IA. la interfaz, ¡siéntete libre de abrir un *Pull Request* o reportar un *Issue*!
 
 ---
