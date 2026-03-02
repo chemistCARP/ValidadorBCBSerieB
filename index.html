@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Validador Serie B v1.15</title>
+    <title>Validador Serie B v1.16</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #eee; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         .card { background: #1e1e1e; width: 100%; max-width: 400px; border-radius: 20px; padding: 15px; box-sizing: border-box; border: 1px solid #333; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
@@ -21,7 +21,6 @@
         .manual-box { background: #252525; padding: 12px; border-radius: 15px; border: 1px solid #333; }
         select, input { width: 100%; padding: 12px; margin: 4px 0; border-radius: 10px; border: 1px solid #444; background: #1a1a1a; color: #fff; font-size: 18px; text-align: center; outline: none; }
         
-        /* Resaltado para cuando el OCR duda */
         .duda-input { border: 2px solid #ffeb3b !important; animation: blink 1s infinite; }
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
@@ -46,7 +45,7 @@
 <div class="card">
     <div class="header">
         <h2>Validador Serie B</h2>
-        <span style="font-size: 10px; color: #888;">v1.15</span>
+        <span style="font-size: 10px; color: #ffc107;">BLOQUES CONSOLIDADOS BCB - 02 MARZO 2026</span>
     </div>
 
     <div id="cam-container">
@@ -56,7 +55,7 @@
     </div>
     
     <button class="btn-ocr" id="btnMain" onclick="activarMotor()">📷 ESCANEAR AHORA</button>
-    <div id="status">Instalación rápida. El motor inicia al primer uso.</div>
+    <div id="status">Verificación técnica de billetes Serie B (PFB).</div>
 
     <div class="manual-box">
         <select id="sel-corte">
@@ -79,15 +78,20 @@
         <a href="https://www.bcb.gob.bo/?q=content/verificador-de-número-de-serie" target="_blank">🔎 Verificador BCB</a>
     </div>
     <div class="footer">
-        <a href="https://x.com/ChemistCRP" target="_blank">👤 Autor: @ChemistCRP</a>
-        Asistencia Técnica: <b>Gemini IA</b> | 2026
- 
+        <a href="https://x.com/ChemistCRP" target="_blank">👤 Autor: @ChemistCRP</a><br>
+        Asistencia Técnica: <b>Gemini IA</b> | v1.16 | 2026
+    </div>
 
     <canvas id="canv" style="display:none;"></canvas>
 </div>
 
 <script>
-    const RANGOS_B = { "10": [[77100001, 77550000], [78000001, 78450000], [78900001, 96350000], [96350001, 96800000], [96800001, 97250000], [98150001, 98600000], [104900001, 105350000], [105350001, 105800000], [106700001, 107150000], [107600001, 108050000], [108050001, 108500000], [109400001, 109850000]], "20": [[87280145, 91646549], [96650001, 97100000], [99800001, 100250000], [100250001, 100700000], [109250001, 109700000], [110600001, 111050000], [111050001, 111500000], [111950001, 112400000], [112400001, 112850000], [112850001, 113300000], [114200001, 114650000], [114650001, 115100000], [115100001, 115550000], [118700001, 119150000], [119150001, 119600000], [120500001, 120950000]], "50": [[67250001, 67700000], [69050001, 69500000], [69500001, 69950000], [69500001, 70400000], [70400001, 70850000], [70850001, 71300000], [7631012, 85139995], [86400001, 86850000], [90900001, 91350000], [91800001, 92250000]] };
+    // RANGOS ACTUALIZADOS Y CONSOLIDADOS - BCB MARZO 2026
+    const RANGOS_B = { 
+        "10": [[77100001, 109800000]], 
+        "20": [[87280145, 120950000]], 
+        "50": [[67250001, 92250000]] 
+    };
 
     const video = document.getElementById('video');
     const resBox = document.getElementById('res-box');
@@ -110,7 +114,7 @@
 
     function activarMotor() {
         if (window.Tesseract) { ejecutarOCR(); return; }
-        status.innerText = "⏳ Descargando motor de lectura...";
+        status.innerText = "⏳ Cargando motor de lectura...";
         const scr = document.createElement('script');
         scr.src = "https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js";
         scr.onload = () => { 
@@ -133,13 +137,11 @@
             const { data: { text } } = await Tesseract.recognize(canv, 'eng');
             const clean = text.toUpperCase();
             
-            // DETECCIÓN DE VALOR: Solo cambia si hay certeza absoluta
             if (/\b10\b/.test(clean)) selCorte.value = "10";
             else if (/\b20\b/.test(clean)) selCorte.value = "20";
             else if (/\b50\b/.test(clean)) selCorte.value = "50";
-            else selCorte.value = ""; // No se leyó valor, se queda en manual
+            else selCorte.value = ""; 
 
-            // DETECCIÓN DE LETRA
             if (/[\s\d]A[\s\W]/.test(clean)) {
                 letraInput.value = "A";
             } else if (/[\s\d][B8][\s\W]/.test(clean)) {
@@ -152,7 +154,7 @@
             const num = clean.replace(/\D/g, " ").split(" ").find(x => x.length >= 7);
             if (num) document.getElementById('inp-num').value = num;
 
-            status.innerText = "✅ Escaneo terminado. Verifique y complete. De ser necesaria la entrada manual oprima VERIFICAR RESULTADO.";
+            status.innerText = "✅ Escaneo terminado. Verifique y complete.";
             status.style.color = "#00d4ff";
         } catch (e) { status.innerText = "Error. Intente de nuevo."; }
     }
@@ -172,7 +174,7 @@
         const detalles = `Bs. ${c} | Serie: ${n_raw} | Letra: ${l}`;
 
         if (esMalo) {
-            showMsg("bad", `⚠️ SIN VALOR LEGAL<br><span style="font-size:13px; font-weight:normal;">${detalles}</span><br>Invalidado por el BCB.`);
+            showMsg("bad", `⚠️ SIN VALOR LEGAL<br><span style="font-size:13px; font-weight:normal;">${detalles}</span><br>Rango consolidado por el BCB hoy.`);
         } else {
             showMsg("ok", `✅ BILLETE VÁLIDO<br><span style="font-size:13px; font-weight:normal;">${detalles}</span><br>Apto para circulación.`);
         }
